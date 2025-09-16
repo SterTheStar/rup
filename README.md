@@ -9,7 +9,7 @@ A simple and efficient CLI tool for uploading files to various APIs, built in Ru
 - **Upload Speed**: Displays upload speed in Mbps.
 - **Configuration**: Easy configuration for API settings.
 - **Modular Design**: Code organized in multiple files and folders for maintainability.
-- **Cross-Platform**: Works on Linux, macOS, and Windows.
+- **Cross-Platform**: Works on Linux and Windows.
 
 ## Installation
 
@@ -20,7 +20,8 @@ Ensure you have Rust installed. Then:
 ```bash
 git clone https://github.com/SterTheStar/rup.git
 cd rup
-cargo build --release
+chmod +x ./build.sh
+./build.sh
 ```
 
 The binary will be in `target/release/rup`.
@@ -29,6 +30,7 @@ The binary will be in `target/release/rup`.
 
 - **Arch Linux**: Download and install `rup-0.1.0-1-x86_64.pkg.tar.zst`
 - **Debian/Ubuntu**: Download and install `rup_0.1.0-1_amd64.deb`
+- **Windows**: Download and install `rup.exe`
 
 ## Usage
 
