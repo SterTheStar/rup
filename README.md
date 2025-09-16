@@ -2,15 +2,6 @@
 
 A simple and efficient CLI tool for uploading files to various APIs, built in Rust. Currently supports uploading to [Litterbox](https://litterbox.catbox.moe/), with extensibility for other APIs in the future.
 
-## Features
-
-- **File Upload**: Upload single files or all files in a directory.
-- **Progress Bar**: Visual progress bar during uploads.
-- **Upload Speed**: Displays upload speed in Mbps.
-- **Configuration**: Easy configuration for API settings.
-- **Modular Design**: Code organized in multiple files and folders for maintainability.
-- **Cross-Platform**: Works on Linux and Windows.
-
 ## Installation
 
 ### From Source
