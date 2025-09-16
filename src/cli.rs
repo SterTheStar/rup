@@ -14,4 +14,6 @@ pub struct Cli {
 pub enum Commands {
     /// Configure the app settings
     Config,
+    /// Show the status of each API
+    Status,
 }

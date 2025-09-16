@@ -60,11 +60,10 @@ async fn upload_file(client: &Client, path: &Path, config: &crate::config::Confi
         .text("reqtype", "fileupload")
         .text("time", config.api.time.clone());
 
-        // Implement proper file upload with progress tracking.
-        // Currently, we read the entire file into memory for simplicity 
-        // (works fine for small/medium files).
-        // reqwest's multipart doesn't support streaming with progress easily.
-        // For large files, we will need to implement a custom streaming solution.
+    // For progress, we need to read the file and add to multipart
+    // But multipart in reqwest doesn't support streaming with progress easily.
+    // So, read the entire file into memory for simplicity (assuming files aren't too large).
+    // For large files, we'd need a custom stream.
 
     let mut data = Vec::new();
     reader.read_to_end(&mut data).await?;

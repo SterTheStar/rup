@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::Parser;
 use rup::cli::{Cli, Commands};
 use rup::config::Config;
+use rup::status;
 use rup::upload;
 
 #[tokio::main]
@@ -11,6 +12,10 @@ async fn main() -> Result<()> {
     match cli.command {
         Some(Commands::Config) => {
             configure()?;
+        }
+        Some(Commands::Status) => {
+            let config = Config::load()?;
+            status::check_status(&config).await?;
         }
         None => {
             if cli.files.is_empty() {
