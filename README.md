@@ -15,7 +15,7 @@ chmod +x ./build.sh
 ./build.sh
 ```
 
-The binary will be in `target/release/rup`.
+The binary will be in `builds`.
 
 ### Pre-built Packages
 
