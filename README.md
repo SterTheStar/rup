@@ -1,4 +1,4 @@
-# rup
+# RuP!
 
 A simple and efficient CLI tool for uploading files to various APIs, built in Rust. Currently supports uploading to [Litterbox](https://litterbox.catbox.moe/), with extensibility for other APIs in the future.
 
