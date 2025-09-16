@@ -1,0 +1,13 @@
+Source: rup
+Section: utils
+Priority: optional
+Maintainer: Esther <esther24072006@gmail.com>
+Build-Depends: debhelper (>= 9), cargo, rustc
+Standards-Version: 4.5.0
+Homepage: https://github.com/SterTheStar/rup
+
+Package: rup
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A CLI tool for uploading files to various APIs
+ A Rust CLI tool to upload files to Litterbox and other APIs with progress bar and speed display.

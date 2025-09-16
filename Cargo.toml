@@ -1,0 +1,19 @@
+[package]
+name = "rup"
+version = "0.1.0"
+edition = "2021"
+description = "A CLI tool for uploading files to various APIs"
+license = "GPL-3.0"
+authors = ["Esther <esther24072006@gmail.com>"]
+homepage = "https://github.com/SterTheStar/rup"
+repository = "https://github.com/SterTheStar/rup"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+reqwest = { version = "0.11", features = ["multipart", "stream"] }
+tokio = { version = "1", features = ["full"] }
+indicatif = "0.17"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+anyhow = "1.0"
+dirs = "5.0"
