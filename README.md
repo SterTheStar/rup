@@ -30,7 +30,7 @@ The binary will be in `target/release/rup`.
 
 - **Arch Linux**: Download and install `rup-0.1.0-1-x86_64.pkg.tar.zst`
 - **Debian/Ubuntu**: Download and install `rup_0.1.0-1_amd64.deb`
-- **Windows**: Download and install `rup.exe`
+- **Windows**: Download and run `rup.exe`
 
 ## Usage
 
