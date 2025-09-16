@@ -88,4 +88,4 @@ Contributions are welcome! Please open an issue or submit a pull request on GitH
 
 ## Author
 
-Esther <esther24072006@gmail.com>
+Esther
