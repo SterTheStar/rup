@@ -47,6 +47,13 @@ rup config
 
 This will prompt for API type and time settings.
 
+### Check API Status
+
+Check the status of all supported APIs:
+```bash
+rup status
+```
+
 ### Help
 
 Show help:
