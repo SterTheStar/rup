@@ -2,7 +2,8 @@ use anyhow::{Result, Context};
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
 use std::fs;
-use std::path::Path;
+use std::io;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, BufReader};
@@ -27,6 +28,40 @@ pub async fn upload_files(files: Vec<String>, config: &crate::config::Config) ->
                 file_paths.push(path.to_path_buf());
             } else {
                 eprintln!("File not found: {}", file);
+            }
+        }
+    }
+
+    // Check for incompatible files if using Litterbox
+    if config.api.api_type == "litterbox" {
+        let mut incompatible: Vec<(PathBuf, String)> = Vec::new();
+        for path in &file_paths {
+            let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+            if matches!(ext.as_str(), "exe" | "scr" | "cpl" | "jar") || ext.starts_with("doc") {
+                incompatible.push((path.clone(), format!("Unsupported extension: {}", ext)));
+            }
+            let size = fs::metadata(path)?.len();
+            if size > 1_073_741_824 {
+                incompatible.push((path.clone(), "File size > 1GB".to_string()));
+            }
+        }
+        if !incompatible.is_empty() {
+            println!("The following files are incompatible with Litterbox API:");
+            for (path, reason) in &incompatible {
+                println!("- {}: {}", path.display(), reason);
+            }
+            if incompatible.len() == file_paths.len() {
+                // All files are incompatible, cancel automatically
+                return Ok(());
+            } else {
+                println!("Proceed without these files? (y/n): ");
+                let mut input = String::new();
+                io::stdin().read_line(&mut input)?;
+                if input.trim().to_lowercase() != "y" {
+                    return Ok(());
+                }
+                // Filter out incompatible files
+                file_paths.retain(|p| !incompatible.iter().any(|(ip, _)| ip == p));
             }
         }
     }
