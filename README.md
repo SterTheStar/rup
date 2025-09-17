@@ -79,13 +79,6 @@ Supported APIs:
 
 Supported time values for Litterbox: 1h, 12h, 24h, 72h.
 
-## API Support
-
-Currently supports:
-- **[Litterbox](https://litterbox.catbox.moe/)**: Anonymous file uploads with expiration times.
-- **[temp.sh](https://temp.sh/)**: Temporary file hosting service.
-- **[uguu.se](https://uguu.se/)**: Simple file sharing service.
-
 ## Credits
 
 This project uses the following APIs for file uploads:
