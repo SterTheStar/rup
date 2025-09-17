@@ -1,6 +1,6 @@
 # Maintainer: Esther <esther24072006@gmail.com>
 pkgname=rup
-pkgver=0.1.0
+pkgver=1.0.2
 pkgrel=1
 pkgdesc="A CLI tool for uploading files to various APIs"
 arch=('x86_64')

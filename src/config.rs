@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use anyhow::{Result, Context};
@@ -11,7 +12,7 @@ pub struct Config {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiConfig {
     pub api_type: String,
-    pub time: String,
+    pub options: HashMap<String, String>,
 }
 
 impl Config {

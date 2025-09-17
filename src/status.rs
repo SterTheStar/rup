@@ -7,6 +7,7 @@ pub async fn check_status(config: &crate::config::Config) -> Result<()> {
     // Define supported APIs
     let apis = vec![
         ("litterbox", "https://litterbox.catbox.moe/"),
+        ("temp_sh", "https://temp.sh/"),
     ];
 
     println!("Checking API status:");
