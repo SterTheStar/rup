@@ -1,6 +1,6 @@
 # RuP!
 
-A simple and efficient CLI tool for uploading files to various APIs, built in Rust. Currently supports uploading to [Litterbox](https://litterbox.catbox.moe/), with extensibility for other APIs in the future.
+A simple and efficient CLI tool for uploading files to various APIs, built in Rust. Supports uploading to multiple anonymous file hosting services including Litterbox, temp.sh, and uguu.se.
 
 ## Installation
 
@@ -20,8 +20,8 @@ The binary will be in `builds`.
 
 ### Pre-built Packages
 
-- **Arch Linux**: Download and install `rup-0.1.0-1-x86_64.pkg.tar.zst`
-- **Debian/Ubuntu**: Download and install `rup_0.1.0-1_amd64.deb`
+- **Arch Linux**: Download and install `rup-x.x.x-1-x86_64.pkg.tar.zst`
+- **Debian/Ubuntu**: Download and install `rup_x.x.x-1_amd64.deb`
 - **Windows**: Download and run `rup.exe`
 
 ## Usage
@@ -65,25 +65,33 @@ rup --help
 
 The configuration is stored in `~/.config/rup/config.toml`.
 
-Example:
+Example for Litterbox:
 ```toml
 [api]
 api_type = "litterbox"
 time = "1h"
 ```
 
+Supported APIs:
+- **litterbox**: Anonymous uploads up to 1GB, files expire after selected time.
+- **temp_sh**: Anonymous uploads up to 4GB, files expire after 3 days.
+- **uguu**: Anonymous uploads up to 128 MiB, files expire after 3 hours.
+
 Supported time values for Litterbox: 1h, 12h, 24h, 72h.
 
 ## API Support
 
 Currently supports:
-- **Litterbox**: Anonymous file uploads with expiration times.
-
-Future versions will support additional APIs.
+- **[Litterbox](https://litterbox.catbox.moe/)**: Anonymous file uploads with expiration times.
+- **[temp.sh](https://temp.sh/)**: Temporary file hosting service.
+- **[uguu.se](https://uguu.se/)**: Simple file sharing service.
 
 ## Credits
 
-This project uses the [Litterbox API](https://litterbox.catbox.moe/) for file uploads. Special thanks to the Litterbox team for providing this service.
+This project uses the following APIs for file uploads:
+- [Litterbox](https://litterbox.catbox.moe/) - Special thanks to the Litterbox team for providing this service.
+- [temp.sh](https://temp.sh/) - Thanks to the temp.sh developers for the temporary file hosting service.
+- [uguu.se](https://uguu.se/) - Thanks to the uguu.se team for the simple file sharing service.
 
 ## License
 
