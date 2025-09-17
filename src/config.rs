@@ -26,6 +26,15 @@ impl Config {
         Ok(config)
     }
 
+    pub fn default() -> Self {
+        Config {
+            api: ApiConfig {
+                api_type: "litterbox".to_string(),
+                options: HashMap::new(),
+            },
+        }
+    }
+
     pub fn save(&self) -> Result<()> {
         let content = toml::to_string_pretty(self).context("Failed to serialize config")?;
         fs::write(Config::config_path(), content).context("Failed to write config file")?;

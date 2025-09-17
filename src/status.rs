@@ -8,6 +8,7 @@ pub async fn check_status(config: &crate::config::Config) -> Result<()> {
     let apis = vec![
         ("litterbox", "https://litterbox.catbox.moe/"),
         ("temp_sh", "https://temp.sh/"),
+        ("uguu", "https://uguu.se/"),
     ];
 
     println!("Checking API status:");

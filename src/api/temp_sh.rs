@@ -3,33 +3,12 @@ use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::{Body, Client};
 use std::fs;
 use std::path::Path;
-use std::pin::Pin;
-use std::task::{Context as TaskContext, Poll};
 use std::time::Instant;
 use tokio::fs::File;
-use tokio::io::{AsyncRead, BufReader, ReadBuf};
+use tokio::io::BufReader;
 use tokio_util::io::ReaderStream;
 
-struct ProgressReader<R> {
-    inner: R,
-    pb: ProgressBar,
-}
-
-impl<R: AsyncRead + Unpin> AsyncRead for ProgressReader<R> {
-    fn poll_read(
-        mut self: Pin<&mut Self>,
-        cx: &mut TaskContext<'_>,
-        buf: &mut ReadBuf<'_>,
-    ) -> Poll<Result<(), std::io::Error>> {
-        let filled_before = buf.filled().len();
-        let res = Pin::new(&mut self.inner).poll_read(cx, buf);
-        if let Poll::Ready(Ok(())) = &res {
-            let filled_after = buf.filled().len();
-            self.pb.inc((filled_after - filled_before) as u64);
-        }
-        res
-    }
-}
+use super::ProgressReader;
 
 pub async fn upload_files(files: Vec<String>, _config: &crate::config::Config) -> Result<()> {
     let client = Client::new();
@@ -55,14 +34,14 @@ pub async fn upload_files(files: Vec<String>, _config: &crate::config::Config) -
         }
     }
 
-    for path in file_paths {
-        upload_file(&client, &path).await?;
+    for (i, path) in file_paths.iter().enumerate() {
+        upload_file(&client, path, i + 1, file_paths.len()).await?;
     }
 
     Ok(())
 }
 
-async fn upload_file(client: &Client, path: &Path) -> Result<()> {
+async fn upload_file(client: &Client, path: &Path, index: usize, total: usize) -> Result<()> {
     let file_name = path.file_name().unwrap().to_str().unwrap();
     let file_size = fs::metadata(path)?.len();
 
@@ -73,7 +52,7 @@ async fn upload_file(client: &Client, path: &Path) -> Result<()> {
             .unwrap()
             .progress_chars("#>-"),
     );
-    pb.set_message(format!("Uploading {}", file_name));
+    pb.set_message(format!("Uploading {}/{}: {}", index, total, file_name));
 
     let start_time = Instant::now();
 
