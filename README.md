@@ -11,9 +11,7 @@ Ensure you have Rust installed. Then:
 ```bash
 git clone https://github.com/SterTheStar/rup.git
 cd rup
-cargo build
-chmod +x ./build.sh
-./build.sh
+node build.js
 ```
 
 The binary will be in `builds`.
