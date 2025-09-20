@@ -74,6 +74,7 @@ Supported APIs:
 - **litterbox**: Anonymous uploads up to 1GB, files expire after selected time.
 - **temp_sh**: Anonymous uploads up to 4GB, files expire after 3 days.
 - **uguu**: Anonymous uploads up to 128 MiB, files expire after 3 hours.
+- **bashupload**: Anonymous uploads up to 50GB, files expire after 3 days, one-time download.
 
 Supported time values for Litterbox: 1h, 12h, 24h, 72h.
 
@@ -83,6 +84,7 @@ This project uses the following APIs for file uploads:
 - [Litterbox](https://litterbox.catbox.moe/) - Special thanks to the Litterbox team for providing this service.
 - [temp.sh](https://temp.sh/) - Thanks to the temp.sh developers for the temporary file hosting service.
 - [uguu.se](https://uguu.se/) - Thanks to the uguu.se team for the simple file sharing service.
+- [bashupload](https://bashupload.com/) - Thanks to the bashupload team for the file sharing service.
 
 ## License
 
