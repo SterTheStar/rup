@@ -104,7 +104,8 @@ fn configure_api() -> Result<()> {
     println!("1. litterbox (up to 1GB per file)");
     println!("2. temp_sh (up to 4GB per file, files expire after 3 days)");
     println!("3. uguu.se (up to 128 MiB per file, files expire after 3 hours)");
-    print!("Enter choice (1-3): ");
+    println!("4. bashupload (up to 50GB per file, files expire after 3 days, one-time download)");
+    print!("Enter choice (1-4): ");
     std::io::stdout().flush()?;
 
     let mut choice = String::new();
@@ -115,6 +116,7 @@ fn configure_api() -> Result<()> {
         "1" => "litterbox".to_string(),
         "2" => "temp_sh".to_string(),
         "3" => "uguu".to_string(),
+        "4" => "bashupload".to_string(),
         _ => {
             println!("Invalid choice. Returning to main menu.");
             std::io::stdout().flush()?;
@@ -163,6 +165,9 @@ fn configure_api() -> Result<()> {
         }
         "uguu" => {
             // No options for uguu
+        }
+        "bashupload" => {
+            // No options for bashupload
         }
         _ => unreachable!(),
     }

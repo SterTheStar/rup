@@ -9,6 +9,7 @@ pub async fn check_status(config: &crate::config::Config) -> Result<()> {
         ("litterbox", "https://litterbox.catbox.moe/"),
         ("temp_sh", "https://temp.sh/"),
         ("uguu", "https://uguu.se/"),
+        ("bashupload", "https://bashupload.com/"),
     ];
 
     println!("Checking API status:");

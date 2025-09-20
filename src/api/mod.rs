@@ -6,6 +6,7 @@ use indicatif::ProgressBar;
 pub mod litterbox;
 pub mod temp_sh;
 pub mod uguu;
+pub mod bashupload;
 
 pub struct ProgressReader<R> {
     pub inner: R,
