@@ -11,6 +11,8 @@ const rl = readline.createInterface({
 rl.question('Enter the version: ', (version) => {
   rl.close();
 
+  const results = [];
+
   // Update Cargo.toml
   const cargoPath = 'Cargo.toml';
   let cargoContent = fs.readFileSync(cargoPath, 'utf8');
@@ -25,16 +27,20 @@ rl.question('Enter the version: ', (version) => {
 
   // Update debian/changelog
   const changelogPath = 'debian/changelog';
-  let changelogContent = fs.readFileSync(changelogPath, 'utf8');
-  const newEntry = `rup (${version}-1) unstable; urgency=medium
+  if (fs.existsSync(changelogPath)) {
+    let changelogContent = fs.readFileSync(changelogPath, 'utf8');
+    const newEntry = `rup (${version}-1) unstable; urgency=medium
 
   * Update.
 
  -- Esther <esther24072006@gmail.com>  ${new Date().toISOString().split('T')[0]} 00:00:00 +0000
 
 `;
-  changelogContent = newEntry + changelogContent;
-  fs.writeFileSync(changelogPath, changelogContent);
+    changelogContent = newEntry + changelogContent;
+    fs.writeFileSync(changelogPath, changelogContent);
+  } else {
+    console.log('Skipping debian/changelog update (file not found).');
+  }
 
   console.log('Installing dependencies...');
   try {
@@ -44,16 +50,59 @@ rl.question('Enter the version: ', (version) => {
   }
 
   console.log('Installing targets...');
-  execSync('rustup target add x86_64-pc-windows-gnu', { stdio: 'inherit' });
+  try {
+    execSync('rustup target add x86_64-pc-windows-gnu', { stdio: 'inherit' });
+  } catch (e) {
+    console.log('Skipping Windows target: `rustup` not found or failed. Install Rust via rustup and run `rustup target add x86_64-pc-windows-gnu` if you need Windows builds.');
+  }
+
+  console.log('Ensuring cargo-deb is installed...');
+  let cargoDebAvailable = true;
+  try {
+    execSync('cargo deb --version', { stdio: 'ignore' });
+  } catch (e) {
+    cargoDebAvailable = false;
+  }
+
+  if (!cargoDebAvailable) {
+    try {
+      console.log('`cargo-deb` not found. Installing with `cargo install cargo-deb` (this may take a while)...');
+      execSync('cargo install cargo-deb', { stdio: 'inherit' });
+      cargoDebAvailable = true;
+    } catch (e) {
+      console.log('Failed to install `cargo-deb`. Debian package will not be built.');
+    }
+  }
 
   console.log('Building for Debian...');
-  execSync('cargo deb', { stdio: 'inherit' });
+  try {
+    if (cargoDebAvailable) {
+      execSync('cargo deb', { stdio: 'inherit' });
+      results.push({ name: 'debian', success: true });
+    } else {
+      console.log('Skipping Debian build because `cargo-deb` is not available.');
+      results.push({ name: 'debian', success: false, error: '`cargo-deb` not available' });
+    }
+  } catch (e) {
+    console.log('Failed to build Debian package. Make sure `cargo-deb` is installed (e.g. `cargo install cargo-deb`).');
+    results.push({ name: 'debian', success: false, error: e.message || 'cargo deb failed' });
+  }
 
   console.log('Building for Arch Linux...');
-  execSync('makepkg -f', { stdio: 'inherit' });
+  try {
+    execSync('makepkg -f', { stdio: 'inherit' });
+  } catch (e) {
+    console.log('Failed to build Arch Linux package with makepkg.');
+    results.push({ name: 'arch', success: false, error: e.message || 'makepkg failed' });
+  }
 
   console.log('Building for Windows (x86_64-pc-windows-gnu)...');
-  execSync('cargo build --release --target x86_64-pc-windows-gnu', { stdio: 'inherit' });
+  try {
+    execSync('cargo build --release --target x86_64-pc-windows-gnu', { stdio: 'inherit' });
+  } catch (e) {
+    console.log('Failed to build Windows target. Ensure the `x86_64-pc-windows-gnu` target and MinGW toolchain are installed.');
+    results.push({ name: 'windows-binary', success: false, error: e.message || 'cargo build failed' });
+  }
 
   console.log('Installing NSIS for Windows installer...');
   try {
@@ -186,46 +235,77 @@ FunctionEnd`;
     execSync('makensis installer.nsi', { stdio: 'inherit' });
   } catch (e) {
     console.log('Failed to compile installer.');
+    results.push({ name: 'windows-installer', success: false, error: e.message || 'makensis failed' });
   }
 
   console.log('Moving build artifacts to builds/ directory...');
-  execSync('rm -rf builds/', { stdio: 'inherit' });
-  execSync('mkdir -p builds', { stdio: 'inherit' });
+  try {
+    fs.rmSync('builds', { recursive: true, force: true });
+  } catch (e) {
+    // ignore
+  }
+  fs.mkdirSync('builds', { recursive: true });
   try {
     execSync('mv target/debian/rup_' + version + '-1_amd64.deb builds/', { stdio: 'inherit' });
   } catch (e) {
     console.log('Debian package not found');
+    // if the move failed but build step said ok, mark as fail here
+    results.push({ name: 'debian', success: false, error: 'Debian package file not found' });
   }
   try {
     execSync('mv rup-' + version + '-1-x86_64.pkg.tar.zst builds/', { stdio: 'inherit' });
   } catch (e) {
     console.log('Arch package not found');
+    results.push({ name: 'arch', success: false, error: 'Arch package file not found' });
   }
   try {
     execSync('mv target/x86_64-pc-windows-gnu/release/rup.exe builds/', { stdio: 'inherit' });
   } catch (e) {
     console.log('Windows binary not found');
+    results.push({ name: 'windows-binary', success: false, error: 'Windows binary file not found' });
   }
   try {
     execSync('mv rup-installer-' + version + '.exe builds/', { stdio: 'inherit' });
   } catch (e) {
     console.log('Windows installer not found');
+    results.push({ name: 'windows-installer', success: false, error: 'Windows installer file not found' });
   }
 
   // Generate checksums
   const crypto = require('crypto');
-  const files = fs.readdirSync('builds/');
-  let checksums = '';
-  files.forEach(file => {
-    if (file !== 'checksums.txt') {
-      const filePath = path.join('builds/', file);
-      const hash = crypto.createHash('sha256');
-      const data = fs.readFileSync(filePath);
-      hash.update(data);
-      checksums += `${hash.digest('hex')}  ${file}\n`;
+  try {
+    const files = fs.readdirSync('builds/');
+    let checksums = '';
+    files.forEach(file => {
+      if (file !== 'checksums.txt') {
+        const filePath = path.join('builds/', file);
+        const hash = crypto.createHash('sha256');
+        const data = fs.readFileSync(filePath);
+        hash.update(data);
+        checksums += `${hash.digest('hex')}  ${file}\n`;
+      }
+    });
+    fs.writeFileSync('builds/checksums.txt', checksums);
+    results.push({ name: 'checksums', success: true });
+  } catch (e) {
+    console.log('Failed to generate checksums.');
+    results.push({ name: 'checksums', success: false, error: e.message || 'checksums failed' });
+  }
+
+  // Write minimal build results summary
+  const orderedNames = ['debian', 'arch', 'windows-binary', 'windows-installer', 'checksums'];
+  const lines = orderedNames.map((name) => {
+    const entry = results.find((r) => r.name === name && r.success === true)
+      || results.find((r) => r.name === name);
+    if (!entry) {
+      return `${name}: not-run`;
     }
+    if (entry.success) {
+      return `${name}: ok`;
+    }
+    return `${name}: fail - ${entry.error}`;
   });
-  fs.writeFileSync('builds/checksums.txt', checksums);
+  fs.writeFileSync('build.results', lines.join('\n') + '\n');
 
   console.log('Build complete.');
   console.log(`Debian package: builds/rup_${version}-1_amd64.deb`);

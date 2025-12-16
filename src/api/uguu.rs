@@ -5,7 +5,7 @@ use serde_json;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use tokio::fs::File;
 use tokio::io::BufReader;
 use tokio_util::io::ReaderStream;
@@ -76,11 +76,13 @@ async fn upload_file(client: &Client, path: &Path, _config: &crate::config::Conf
     let pb = ProgressBar::new(file_size);
     pb.set_style(
         ProgressStyle::default_bar()
-            .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({bytes_per_sec}, {eta})")
+            .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({percent}%, {bytes_per_sec}, {eta})")
             .unwrap()
             .progress_chars("#>-"),
     );
     pb.set_message(format!("Uploading {}/{}: {}", index, total, file_name));
+
+    pb.enable_steady_tick(Duration::from_millis(80));
 
     let start_time = Instant::now();
 

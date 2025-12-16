@@ -1,11 +1,10 @@
 use anyhow::Result;
 use clap::Parser;
+use dialoguer::{theme::ColorfulTheme, Select};
 use rup::cli::{Cli, Commands};
 use rup::config::Config;
 use rup::status;
 use rup::upload;
-use std::io::Write;
-
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -42,47 +41,39 @@ fn configure() -> Result<()> {
     println!();
 
     let mut current_menu = ConfigMenu::Main;
+    let theme = ColorfulTheme::default();
 
     loop {
-        // Clear screen and move to top
-        print!("\x1B[2J\x1B[1;1H");
-        std::io::stdout().flush()?;
-
         // Load current config
         let config = Config::load().unwrap_or_else(|_| Config::default());
 
-        // Display current config
-        println!("Current Configuration:");
-        println!("  API: {}", config.api.api_type);
-        if let Some(time) = config.api.options.get("time") {
-            println!("      Time: {}", time);
-        }
-        println!();
-
         match current_menu {
             ConfigMenu::Main => {
-                println!("Configuration Menu:");
-                println!("1. API Settings");
-                println!("2. Save and Exit");
-                print!("Enter choice (1-2): ");
-                std::io::stdout().flush()?;
+                let current_api = &config.api.api_type;
+                let current_time = config.api.options.get("time").cloned().unwrap_or_default();
 
-                let mut choice = String::new();
-                std::io::stdin().read_line(&mut choice)?;
-                let choice = choice.trim();
+                let menu_items = vec!["API Settings", "Save and Exit"];
 
-                match choice {
-                    "1" => current_menu = ConfigMenu::ApiSettings,
-                    "2" => break,
-                    _ => {
-                        println!("Invalid choice. Please try again.");
-                        std::io::stdout().flush()?;
-                        std::thread::sleep(std::time::Duration::from_secs(2));
-                    }
+                let prompt = if current_time.is_empty() {
+                    format!("Current API: {current_api}")
+                } else {
+                    format!("Current API: {current_api} (time: {current_time})")
+                };
+
+                let selection = Select::with_theme(&theme)
+                    .with_prompt(prompt)
+                    .items(&menu_items)
+                    .default(0)
+                    .interact()?;
+
+                match selection {
+                    0 => current_menu = ConfigMenu::ApiSettings,
+                    1 => break,
+                    _ => unreachable!(),
                 }
             }
             ConfigMenu::ApiSettings => {
-                configure_api()?;
+                configure_api(&theme)?;
                 current_menu = ConfigMenu::Main;
             }
         }
@@ -92,84 +83,48 @@ fn configure() -> Result<()> {
     Ok(())
 }
 
-fn configure_api() -> Result<()> {
-    // Clear screen and move to top
-    print!("\x1B[2J\x1B[1;1H");
-    std::io::stdout().flush()?;
+fn configure_api(theme: &ColorfulTheme) -> Result<()> {
+    let api_items = vec![
+        "litterbox (up to 1GB per file)",
+        "temp_sh (up to 4GB per file, files expire after 3 days)",
+        "uguu.se (up to 128 MiB per file, files expire after 3 hours)",
+        "bashupload (up to 50GB per file, files expire after 3 days, one-time download)",
+    ];
 
-    println!("API Settings");
-    println!("------------");
-    println!();
-    println!("Select API type:");
-    println!("1. litterbox (up to 1GB per file)");
-    println!("2. temp_sh (up to 4GB per file, files expire after 3 days)");
-    println!("3. uguu.se (up to 128 MiB per file, files expire after 3 hours)");
-    println!("4. bashupload (up to 50GB per file, files expire after 3 days, one-time download)");
-    print!("Enter choice (1-4): ");
-    std::io::stdout().flush()?;
+    let api_selection = Select::with_theme(theme)
+        .with_prompt("Select API type")
+        .items(&api_items)
+        .default(0)
+        .interact()?;
 
-    let mut choice = String::new();
-    std::io::stdin().read_line(&mut choice)?;
-    let choice = choice.trim();
-
-    let api_type = match choice {
-        "1" => "litterbox".to_string(),
-        "2" => "temp_sh".to_string(),
-        "3" => "uguu".to_string(),
-        "4" => "bashupload".to_string(),
-        _ => {
-            println!("Invalid choice. Returning to main menu.");
-            std::io::stdout().flush()?;
-            std::thread::sleep(std::time::Duration::from_secs(2));
-            return Ok(());
-        }
+    let api_type = match api_selection {
+        0 => "litterbox".to_string(),
+        1 => "temp_sh".to_string(),
+        2 => "uguu".to_string(),
+        3 => "bashupload".to_string(),
+        _ => unreachable!(),
     };
 
     let mut options = std::collections::HashMap::new();
 
-    match api_type.as_str() {
-        "litterbox" => {
-            // Clear screen
-            print!("\x1B[2J\x1B[1;1H");
-            std::io::stdout().flush()?;
+    if api_type == "litterbox" {
+        let time_items = vec!["1h", "12h", "24h", "72h"];
 
-            println!("API Settings - Litterbox");
-            println!("------------------------");
-            println!();
-            println!("Select upload time:");
-            println!("1. 1h");
-            println!("2. 12h");
-            println!("3. 24h");
-            println!("4. 72h");
-            print!("Enter choice (1-4): ");
-            std::io::stdout().flush()?;
+        let time_selection = Select::with_theme(theme)
+            .with_prompt("Select upload time for litterbox")
+            .items(&time_items)
+            .default(0)
+            .interact()?;
 
-            let mut time_choice = String::new();
-            std::io::stdin().read_line(&mut time_choice)?;
-            let time = match time_choice.trim() {
-                "1" => "1h",
-                "2" => "12h",
-                "3" => "24h",
-                "4" => "72h",
-                _ => {
-                    println!("Invalid choice. Using default 1h.");
-                    std::io::stdout().flush()?;
-                    std::thread::sleep(std::time::Duration::from_secs(2));
-                    "1h"
-                }
-            };
-            options.insert("time".to_string(), time.to_string());
-        }
-        "temp_sh" => {
-            // No options for temp_sh
-        }
-        "uguu" => {
-            // No options for uguu
-        }
-        "bashupload" => {
-            // No options for bashupload
-        }
-        _ => unreachable!(),
+        let time = match time_selection {
+            0 => "1h",
+            1 => "12h",
+            2 => "24h",
+            3 => "72h",
+            _ => unreachable!(),
+        };
+
+        options.insert("time".to_string(), time.to_string());
     }
 
     // Save API config
