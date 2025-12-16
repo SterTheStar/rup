@@ -1,4 +1,4 @@
-# RuP!
+<img width="64" height="64" alt="logo-64x" src="https://github.com/user-attachments/assets/da509ca4-3eab-4613-a72c-12a91ce8d4d5" />
 
 A simple and efficient CLI tool for uploading files to various APIs, built in Rust. Supports uploading to multiple anonymous file hosting services including Litterbox, temp.sh, and uguu.se.
 
